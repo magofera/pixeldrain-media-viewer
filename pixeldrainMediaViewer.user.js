@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Pixeldrain Media Viewer
-// @namespace    https://github.com/jeanmoraes0/pixeldrain-media-viewer
+// @namespace    https://github.com/magofera/pixeldrain-media-viewer
 // @version      1.0
 // @description  The "Pixeldrain Media Viewer" script enhances the user experience on the "Pixeldrain.com" website by adding features that make it easier to view single videos and media within albums, improving the convenience of accessing media for users.
 // @match        https://pixeldrain.com/*
-// @author       Jean Moraes
+// @author       Magof
 // ==/UserScript==
 
 
