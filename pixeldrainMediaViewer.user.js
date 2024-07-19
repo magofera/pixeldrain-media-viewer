@@ -1,135 +1,169 @@
 // ==UserScript==
-// @name         Pixeldrain Media Viewer
-// @namespace    Magof - pixeldrain-media-viewer
-// @version      1.0
-// @description  The "Pixeldrain Media Viewer" script enhances the user experience on the "Pixeldrain.com" website by adding features that make it easier to view single videos and media within albums, improving the convenience of accessing media for users.
-// @match        https://*.pixeldrain.com/*
+// @name         Pixeldrain Viewer & Download - With Bypass
+// @namespace    Magof - pixeldrain viewer & download - with bypass
+// @description  Enhances PixelDrain by handling file list clicks, displaying media content, and adding download bypass buttons for individual files and lists.
+// @version      2.0
 // @author       Magof
+// @match        https://pixeldrain.com/l/*
+// @match        https://pixeldrain.com/u/*
+// @grant        none
 // ==/UserScript==
 
+(function() {
+    'use strict';
 
-(function () {
-  'use strict';
+    // Function to create and add the download button
+    function addDownloadButton(buttonText, isList) {
+        const button = document.createElement("button");
+        const downloadIcon = document.createElement("a");
+        downloadIcon.className = "icon";
+        downloadIcon.textContent = "download";
+        downloadIcon.style.color = "#d7dde8";
+        const downloadButtonText = document.createElement("span");
+        downloadButtonText.textContent = buttonText;
+        button.appendChild(downloadIcon);
+        button.appendChild(downloadButtonText);
 
-  function getContentAfterSlash(type) {
-    const currentUrl = window.location.href;
-    const startIndex = currentUrl.indexOf(type) + type.length;
-    return currentUrl.substring(startIndex);
-  }
+        // Add click event listener to the button
+        button.addEventListener('click', () => {
+            const fileId = getFileIdFromUrl();
+            if (fileId) {
+                const downloadUrl = isList
+                    ? `https://cdn.pd10.workers.dev/api/list/${fileId}/zip`
+                    : `https://pd.cybar.xyz/${fileId}?download`;
+                window.open(downloadUrl, '_blank'); // Open the URL in a new tab
+            } else {
+                console.error('File ID could not be determined for download.');
+            }
+        });
 
-  function createModal(contentType, fileUrl) {
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    modal.style.display = 'flex';
-    modal.style.justifyContent = 'center';
-    modal.style.alignItems = 'center';
-    document.body.appendChild(modal);
-
-    let contentElement;
-
-    if (contentType.startsWith('image')) {
-      contentElement = document.createElement('img');
-    } else if (contentType.startsWith('video')) {
-      contentElement = document.createElement('video');
-      contentElement.controls = true;
-    } else {
-      contentElement = document.createElement('p');
-      contentElement.textContent = 'Tipo de arquivo não suportado';
-    }
-
-    contentElement.src = fileUrl;
-    contentElement.style.maxWidth = '80%';
-    contentElement.style.maxHeight = '80%';
-    modal.appendChild(contentElement);
-
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Fechar';
-    closeButton.style.marginTop = '10px';
-    closeButton.style.padding = '10px 20px';
-    closeButton.style.backgroundColor = 'red';
-    closeButton.style.color = 'white';
-    closeButton.style.border = 'none';
-    closeButton.style.cursor = 'pointer';
-    closeButton.addEventListener('click', function () {
-      document.body.removeChild(modal);
-      if (contentType.startsWith('video')) {
-        contentElement.pause();
-        contentElement.src = '';
-      }
-    });
-    modal.appendChild(closeButton);
-  }
-
-  function addPlayButton() {
-    const descriptionDiv = document.querySelector('.description.svelte-16pxrp4');
-    if (descriptionDiv) {
-      const playButton = document.createElement('button');
-      const playIcon = document.createElement('i');
-      playIcon.textContent = 'play';
-      playButton.appendChild(playIcon);
-
-      playButton.style.backgroundColor = 'blue';
-      playButton.style.color = 'white';
-      playButton.style.border = 'none';
-      playButton.style.padding = '5px 10px';
-
-      const brElement = descriptionDiv.querySelector('br');
-      if (brElement) {
-        brElement.parentNode.insertBefore(playButton, brElement.nextSibling);
-      } else {
-        descriptionDiv.appendChild(playButton);
-      }
-
-      playButton.addEventListener('click', function () {
-        const content = getContentAfterSlash('/u/');
-        const fileUrl = `https://pixeldrain.com/api/file/${content}`;
-        createModal('video', fileUrl);
-      });
-    }
-  }
-
-  function fetchInfoFromAPI() {
-    const currentUrl = window.location.href;
-    if (currentUrl.includes('/l/')) {
-      const content = getContentAfterSlash('/l/');
-      const apiUrl = `https://pixeldrain.com/api/list/${content}`;
-
-      fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-          if (data.files && Array.isArray(data.files)) {
-            const fileData = data.files.map(file => ({
-              id: file.id,
-              mimeType: file.mime_type,
-            }));
-
-            const aTags = document.querySelectorAll('.gallery.svelte-1arosya a');
-            aTags.forEach((a, index) => {
-              a.addEventListener('click', function (event) {
-                event.preventDefault();
-                if (index < fileData.length) {
-                  const fileInfo = fileData[index];
-                  const fileUrl = `https://pixeldrain.com/api/file/${fileInfo.id}`;
-                  createModal(fileInfo.mimeType, fileUrl);
+        const labels = document.querySelectorAll('div.label');
+        labels.forEach(label => {
+            if (label.textContent.trim() === 'Size') {
+                const nextElement = label.nextElementSibling;
+                if (nextElement) {
+                    nextElement.insertAdjacentElement('afterend', button);
                 }
-              });
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Erro ao acessar a API:', error);
+            }
         });
     }
-  }
 
-  if (window.location.href.includes('/u/')) {
-    addPlayButton();
-  }
+    // Function to handle clicks on file links
+    function extractIdFromInnerHTML(innerHTML) {
+        const idMatch = innerHTML.match(/\/api\/file\/(\w+)\/thumbnail/);
+        return idMatch ? idMatch[1] : null;
+    }
 
-  fetchInfoFromAPI();
+    function handleClick(event) {
+        event.preventDefault(); // Prevent the default action
+        const link = event.currentTarget;
+        const innerHTML = link.innerHTML;
+        const fileId = extractIdFromInnerHTML(innerHTML);
+
+        if (fileId) {
+            const fileUrl = `https://pixeldrain.com/u/${fileId}`;
+            window.open(fileUrl, '_blank'); // Open the URL in a new tab
+        } else {
+            console.error('File ID could not be extracted from innerHTML.');
+        }
+    }
+
+    function setUpClickHandlers() {
+        const aTags = document.querySelectorAll('.gallery.svelte-85yow a');
+        aTags.forEach(a => {
+            a.addEventListener('click', handleClick);
+        });
+    }
+
+    function clearElement(selector) {
+        const element = document.querySelector(selector);
+        if (element) {
+            while (element.firstChild) {
+                element.removeChild(element.firstChild);
+            }
+        }
+    }
+
+    function createMediaDisplay(selector, mediaUrl, isVideo) {
+        const element = document.querySelector(selector);
+        if (element) {
+            const mediaContainer = document.createElement('div');
+            mediaContainer.style.display = 'flex';
+            mediaContainer.style.justifyContent = 'center';
+            mediaContainer.style.alignItems = 'center';
+            mediaContainer.style.height = '500px';
+            mediaContainer.style.backgroundColor = '#333';
+            mediaContainer.style.color = '#fff';
+            mediaContainer.style.borderRadius = '10px';
+            mediaContainer.style.padding = '20px';
+            mediaContainer.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+
+            if (isVideo) {
+                const videoPlayer = document.createElement('video');
+                videoPlayer.style.maxWidth = '100%';
+                videoPlayer.style.maxHeight = '100%';
+                videoPlayer.style.border = '2px solid #fff';
+                videoPlayer.style.borderRadius = '5px';
+                videoPlayer.controls = true;
+                videoPlayer.innerHTML = `<source src="${mediaUrl}" type="video/mp4">Your browser does not support the video tag.`;
+                mediaContainer.appendChild(videoPlayer);
+            } else {
+                const imageElement = document.createElement('img');
+                imageElement.style.maxWidth = '100%';
+                imageElement.style.maxHeight = '100%';
+                imageElement.style.border = '2px solid #fff';
+                imageElement.style.borderRadius = '5px';
+                imageElement.src = mediaUrl;
+                mediaContainer.appendChild(imageElement);
+            }
+
+            element.appendChild(mediaContainer);
+        }
+    }
+
+    function getFileIdFromUrl() {
+        const urlParts = window.location.pathname.split('/');
+        return urlParts[urlParts.length - 1];
+    }
+
+    function fetchFileInfo(fileId) {
+        const apiUrl = `https://pixeldrain.com/api/file/${fileId}/info`;
+        return fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => data)
+            .catch(error => {
+                console.error('Error fetching file info:', error);
+                return null;
+            });
+    }
+
+    function initialize() {
+        if (window.location.pathname.includes('/l/')) {
+            setUpClickHandlers();
+            addDownloadButton('Download ZIP Bypass', true);
+        } else if (window.location.pathname.includes('/u/')) {
+            const selector = '.file_preview.svelte-jngqwx.checkers.toolbar_visible';
+            clearElement(selector);
+            addDownloadButton('Download Bypass', false);
+
+            const fileId = getFileIdFromUrl();
+            fetchFileInfo(fileId).then(fileInfo => {
+                if (fileInfo) {
+                    const mimeType = fileInfo.mime_type;
+                    const mediaUrl = `https://pd.cybar.xyz/${fileId}`;
+
+                    if (mimeType.startsWith('video')) {
+                        createMediaDisplay(selector, mediaUrl, true);
+                    } else if (mimeType.startsWith('image')) {
+                        createMediaDisplay(selector, mediaUrl, false);
+                    } else {
+                        console.warn('Unsupported mime type:', mimeType);
+                    }
+                }
+            });
+        }
+    }
+
+    window.addEventListener('load', initialize);
+
 })();
