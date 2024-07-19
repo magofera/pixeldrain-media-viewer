@@ -1,36 +1,23 @@
-# Pixeldrain Media Viewer
+## Pixeldrain Viewer & Download - With Bypass
 
-## Description
-The "Pixeldrain Media Viewer" script enhances the user experience on the "Pixeldrain.com" website by adding features that make it easier to view single videos and media within albums, improving the convenience of accessing media for users.
+### Description
+This userscript enhances the PixelDrain experience by adding the following functionalities:
 
-## Key Features
+- **File List Click Handling**: When a user clicks on a file in a list, the script intercepts the click, extracts the file ID, and opens the file link in a new tab.
+- **Multimedia Content Display with Bypass**: For individual file links, the script displays multimedia content directly on the page using a video player or image viewer with bypass, which does not consume your download bandwidth.
+- **Download Buttons with Bypass**: Adds download bypass buttons for individual files and file lists, allowing users to download files directly or a zipped list of files without consuming their download bandwidth and without navigating through the standard site interface.
 
-1. **Viewing Single Videos:**
-   - When a link to a single video is encountered (e.g., `https://pixeldrain.com/u/123abc`), the script adds a "play" button just below the description.
-   - Clicking the "play" button opens a modal, allowing direct video playback on the site.
+### Usage Example
+- When accessing a file list at `https://pixeldrain.com/l/*`, clicking any file will open the file page in a new tab.
+- When accessing an individual file at `https://pixeldrain.com/u/*`, the file's content will be displayed directly on the page.
+- The "Download Bypass" and "Download ZIP Bypass" buttons will allow you to download files and file lists directly, without consuming your download bandwidth and without navigating through the standard interface.
 
-2. **Viewing Media Albums:**
-   - When a link to a media album is encountered (e.g., `https://pixeldrain.com/l/456def`), the script enables the viewing of images and videos within the album.
-   - Clicking on a file within the album opens a modal, enabling direct viewing of the image or video.
-   - To download a file from the album, simply right-click on the file and open it in a new tab or window.
+### Author
+**Magof**
 
-## How to Use
+### Version
+2.0
 
-1. **Installation:**
-   - Ensure you have a user script extension like Violentmonkey installed in your browser.
-   - Install the user script by clicking [here](https://greasyfork.org/scripts/475545-pixeldrain-media-viewer/code/Pixeldrain%20Media%20Viewer.user.js).
-   - Access the "Pixeldrain.com" website (https://pixeldrain.com/).
-
-2. **Viewing Single Videos:**
-   - When you encounter a link to a single video on the page, such as `https://pixeldrain.com/u/123abc`, a "play" button is automatically added just below the description.
-   - Click the "play" button to open a modal and watch the video directly on the site.
-
-3. **Viewing Media Albums:**
-   - When you encounter a link to a media album on the page, such as `https://pixeldrain.com/l/456def`, you can view images and videos from the album.
-   - Click on a file within the album to open a modal and view the image or video.
-   - To download a file from the album, right-click on the file and open it in a new tab or window.
-
-## Additional Notes
-
-- This script is compatible with browsers that support user script extensions, such as Violentmonkey.
-- The script requires no additional configuration and functions automatically on the "Pixeldrain.com" website when it detects links to single videos or media albums.
+### URL Match
+- `https://pixeldrain.com/l/*`
+- `https://pixeldrain.com/u/*`
